@@ -67,16 +67,14 @@ const parseNaverDict = (body, callback) => {
 
     let dict = new Object();    
     if (searchResult === null || searchResult.hasResult === false || searchEntryList.total === 0 ||searchEntryList.items === null) {
-        dict.error = true;
-        callback(dict);
+        callback({error: true, errorMessage: 'Word Not found'});
         return;
     }
 
     const items = searchEntryList.items.filter(item => item.dicType === 2)[0];
 
     if (!items) {
-        dict.error = true;
-        callback(dict);
+        callback({error: true, errorMessage: 'Word Not found'});
         return;
     }
 
@@ -190,7 +188,7 @@ const reGetNaverDict = (keyword, callback) => {
                 const searchEntryList = searchResult.searchEntryList;
             
                 if (searchResult === null || searchResult.hasResult === false || searchEntryList.total === 0 ||searchEntryList.items === null) {
-                    return;
+                    callback({error: true, errorMessage: 'Word Not found'});
                 }
                 parseNaverDict(body, callback);
                 return;
