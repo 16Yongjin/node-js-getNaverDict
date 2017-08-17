@@ -3,6 +3,11 @@ const {parts} = require('./partOfSpeech');
 
 const getNaverDict = (keyword, callback) => {
 
+    const check = /[ㄱ-ㅎ|ㅏ-ㅣ|가-힣]+/;
+    if (check.test(keyword)) {
+        return getKoToPT(keyword.match(check)[0], callback);
+    }
+
     if (keyword.endsWith('amente')) {
         keyword = keyword.replace('amente', 'o');
     }
@@ -21,26 +26,22 @@ const getNaverDict = (keyword, callback) => {
         if (!error && response.statusCode === 200) {
             console.log('processing : ' , keyword);            
             if (body.exactMatcheEntryUrl !== "false") {
-                getNaverEntryDict(body.exactMatcheEntryUrl.replace("/#entry/", ""), callback); // 엔트리가 있으면 엔트리로 검색함
-                return;
+                return getNaverEntryDict(body.exactMatcheEntryUrl.replace("/#entry/", ""), callback); // 엔트리가 있으면 엔트리로 검색함
             } else {
 
                 const isPlural = pluralCheck(body); // 복수형이나 여성형이면 원형 찾아서 검색함 (불완전)
                 // console.log(body.query + " isPlural? :" + isPlural);
                 if (!!isPlural) {
-                    reGetNaverDict(isPlural, callback);
-                    return;
+                    return reGetNaverDict(isPlural, callback);
                 }
 
                 const searchResult = body.searchResult;
                 const searchEntryList = searchResult.searchEntryList;
             
-                if (searchResult === null || searchResult.hasResult === false || searchEntryList.total === 0 || searchEntryList.items.filter(item => item.dicType === 2).length === 0) {
-                    getVerbRoot(body.query, callback); // 동사원형 찾아서 다시 검색함
-                    return;
+                if (searchResult === null || searchResult.hasResult === false || searchEntryList.total === 0 || searchEntryList.items.filter(item => item.dicType === 2).length === 0 || searchEntryList.items.filter(item => item.dicType === 2)[0].meanList[0].partOfSpeech === "") {
+                    return getVerbRoot(body.query, callback); // 동사원형 찾아서 다시 검색함
                 }
-                parseNaverDict(body, callback); // 2번 타입 사전이 있다면 그대로 파싱해서 내보냄
-                return;
+                return parseNaverDict(body, callback); // 2번 타입 사전이 있다면 그대로 파싱해서 내보냄
             }
         }
 
@@ -67,18 +68,16 @@ const parseNaverDict = (body, callback) => {
 
     let dict = new Object();    
     if (searchResult === null || searchResult.hasResult === false || searchEntryList.total === 0 ||searchEntryList.items === null) {
-        callback({error: true, errorMessage: 'Word Not found'});
-        return;
+        return callback({error: true, errorMessage: 'Word Not found'});
     }
 
     const items = searchEntryList.items.filter(item => item.dicType === 2)[0];
 
     if (!items) {
-        callback({error: true, errorMessage: 'Word Not found'});
-        return;
+        return callback({error: true, errorMessage: 'Word Not found'});
     }
 
-    dict.entry = items.entry.replace(/<strong>(.+)<\/strong>/g, "$1");
+    dict.entry = items.entry.replace(/<\/?strong>/g, "");
 
     if (items.phoneticSigns.length > 0) {
         dict.phoneticSigns = '[' + items.phoneticSigns[0] + ']';
@@ -90,7 +89,7 @@ const parseNaverDict = (body, callback) => {
     for (let i=0; i<meanList.length; i++) {
         const meaning = meanList[i];
         let partOfSpeech = meaning.partOfSpeech;
-        if (!partOfSpeech !== '' && parts[partOfSpeech]) {
+        if (!(partOfSpeech !== '' && parts[partOfSpeech])) {
             partOfSpeech = '[' + parts[partOfSpeech] + ']';
         }
         dict.meanings.push({
@@ -157,15 +156,13 @@ const getVerbRoot = (keyword, callback) => {
         if (!error && response.statusCode == 200) {
             const res = JSON.parse(body);
             if (res.length > 0) {
-                reGetNaverDict(res.filter(v => v.V[0] === keyword[0])[0].V, callback);
+                return reGetNaverDict(res.filter(v => v.V[0] === keyword[0])[0].V, callback);
             } else {
-                keyword = keyword.replace(/(a$)|(os$)|(as$)/, 'o');
-                reGetNaverDict(keyword, callback);
+                keyword = keyword.replace(/(a$)|(os$)|(as$)/, 'o').replace(/s$/, '');
+                return reGetNaverDict(keyword, callback);
             }
-            return;
         }
-
-        callback({error: true, errorMessage: 'Verb Server Not Found'});
+        return callback({error: true, errorMessage: 'Verb Server Not Found'});
         
     });
 }
@@ -181,23 +178,102 @@ const reGetNaverDict = (keyword, callback) => {
         if (!error && response.statusCode === 200) {
             console.log('processing : ' , keyword);            
             if (body.exactMatcheEntryUrl !== "false") {
-                getNaverEntryDict(body.exactMatcheEntryUrl.replace("/#entry/", ""), callback);
-                return;
+                return etNaverEntryDict(body.exactMatcheEntryUrl.replace("/#entry/", ""), callback);
             } else {
                 const searchResult = body.searchResult;
                 const searchEntryList = searchResult.searchEntryList;
             
-                if (searchResult === null || searchResult.hasResult === false || searchEntryList.total === 0 ||searchEntryList.items === null) {
-                    callback({error: true, errorMessage: 'Word Not found'});
+                if (searchResult === null || searchResult.hasResult === false || searchEntryList.total === 0 ||searchEntryList.items === null ||  searchEntryList.items[0].value === "") {
+                    return callback({error: true, errorMessage: 'Word Not found'});
                 }
-                parseNaverDict(body, callback);
-                return;
+                return parseNaverDict(body, callback);
+
             }
         }
 
         callback({error: true, errorMessage: 'ReGet Server Not Found'});
         
     });
+}
+
+const getKoToPT = (keyword, callback) => {
+    const url = 'http://ptdic.naver.com/api/pt/search.nhn?dictName=alldict&query=' + encodeURIComponent(keyword.toLowerCase());
+    request({
+        url: url,
+        json: true
+    }, function (error, response, body) {
+
+    
+        if (!error && response.statusCode === 200) {
+            console.log('processing : ' , keyword);            
+            if (body.exactMatcheEntryUrl !== "false") {
+                return getKoToPtEntryDict(body.exactMatcheEntryUrl.replace("/#entry/", ""), callback);
+
+            } else {
+                const searchResult = body.searchResult;
+                const searchEntryList = searchResult.searchEntryList;
+            
+                if (searchResult === null || searchResult.hasResult === false || searchEntryList.total === 0 ||searchEntryList.items === null ||  searchEntryList.items[0].value === "") {
+                    return callback({error: true, errorMessage: 'Word Not found'});
+
+                }
+                return parseKoToPt(body, callback);
+
+            }
+        }
+
+        return callback({error: true, errorMessage: 'ReGet Server Not Found'});
+        
+    });
+}
+
+
+const getKoToPtEntryDict = (entry, callback) => {
+    const url = 'http://ptdic.naver.com/api/pt/entry.nhn?meanType=default&groupConjugation=false&entryId=' + entry;
+    request({
+        url: url,
+        json: true
+    }, function (error, response, body) {
+    
+        if (!error && response.statusCode === 200) {
+            return parseKoToPt(body, callback);            
+        }
+    });
+
+    callback({error: true, errorMessage: 'Server Not Found'});            
+}
+
+const parseKoToPt = (body, callback) => {
+    const searchResult = body.searchResult;
+    const searchEntryList = searchResult.searchEntryList;
+
+    let dict = new Object();    
+    if (searchResult === null || searchResult.hasResult === false || searchEntryList.total === 0 ||searchEntryList.items === null) {
+        return callback({error: true, errorMessage: 'Word Not found'});
+    }
+
+    let items = searchEntryList.items.filter(item => item.dicType === 1);
+
+    if (items.length === 0) {
+        return callback({error: true, errorMessage: 'Word Not found'});
+    }
+
+    items = items.filter(item => item.entry.replace(/<\/?strong>/g, "") === body.query);
+
+    if (items.length === 0) {
+        return callback({error: true, errorMessage: 'Word Not found'});
+    }
+    dict.entry = searchEntryList.query;
+    dict.meanings = []
+    items.map(item => {
+         dict.meanings.push({
+            partOfSpeech: '',
+            value: item.meanList[0].value
+        });       
+    });
+
+    dict.error = false;
+    return callback(dict);
 }
 
 
@@ -220,3 +296,6 @@ module.exports = {getNaverDict};
 
 // const test2 = `flucker`.split(' ');
 // test2.map(i => getNaverDict(i, j => console.log(j)));
+
+
+getNaverDict('fogo', i => console.log(i))
