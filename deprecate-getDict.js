@@ -118,6 +118,6 @@ const getVerbRoot = (keyword, callback) => {
     });
 }
 
-getNaverDict("ostracizamos", function(i) {console.log(i)});
+// getNaverDict("ostracizamos", function(i) {console.log(i)});
 // getVerbRoot('impede', i=>console.log(i));
 

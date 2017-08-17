@@ -2,6 +2,15 @@ const request = require('request');
 const {parts} = require('./partOfSpeech');
 
 const getNaverDict = (keyword, callback) => {
+
+    if (keyword.endsWith('amente')) {
+        keyword = keyword.replace('amente', 'o');
+    }
+
+    if (keyword.endsWith('ões')) {
+        keyword = keyword.replace('ões', 'ão');
+    }
+
     const url = 'http://ptdic.naver.com/api/pt/search.nhn?dictName=alldict&query=' + encodeURIComponent(keyword.toLowerCase());
     request({
         url: url,
@@ -31,9 +40,11 @@ const getNaverDict = (keyword, callback) => {
                     return;
                 }
                 parseNaverDict(body, callback); // 2번 타입 사전이 있다면 그대로 파싱해서 내보냄
+                return;
             }
         }
-        
+
+        callback({error: true, errorMessage: 'Server Not Found'});        
     });
 }
 
@@ -120,6 +131,7 @@ const pluralCheck = (body) => {
 }
 
 const getVerbRoot = (keyword, callback) => {
+    keyword =  keyword.split(' ')[0];
 
     const url = 'http://139.59.159.204:30000/api/';
 
@@ -134,7 +146,7 @@ const getVerbRoot = (keyword, callback) => {
         'Origin':'http://cooljugator.com',
         'Connection':'keep-alive'
     }
-    const body = 'language=pt&verb=' + keyword.split(' ')[0];
+    const body = 'language=pt&verb=' + keyword;
     // Configure the request
     const options = {
         url: url,
@@ -147,9 +159,16 @@ const getVerbRoot = (keyword, callback) => {
         if (!error && response.statusCode == 200) {
             const res = JSON.parse(body);
             if (res.length > 0) {
-                reGetNaverDict(res[0].V, callback);
+                reGetNaverDict(res.filter(v => v.V[0] === keyword[0])[0].V, callback);
+            } else {
+                keyword = keyword.replace(/(a$)|(os$)|(as$)/, 'o');
+                reGetNaverDict(keyword, callback);
             }
+            return;
         }
+
+        callback({error: true, errorMessage: 'Verb Server Not Found'});
+        
     });
 }
 
@@ -174,8 +193,11 @@ const reGetNaverDict = (keyword, callback) => {
                     return;
                 }
                 parseNaverDict(body, callback);
+                return;
             }
         }
+
+        callback({error: true, errorMessage: 'ReGet Server Not Found'});
         
     });
 }
@@ -197,8 +219,6 @@ module.exports = {getNaverDict};
 
 // test.map(i => getNaverDict(i, j => console.log(j)));
 
-// const test2 = `gatos`.split(' ');
-// test2.map(i => getNaverDict(i, j => console.log(j)));
 
-// getNaverDict("bom dia", function(i) {console.log(i)});
-// getVerbRoot('impede', i=>console.log(i));
+// const test2 = `flucker`.split(' ');
+// test2.map(i => getNaverDict(i, j => console.log(j)));
