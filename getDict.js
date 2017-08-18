@@ -26,7 +26,13 @@ const getNaverDict = (keyword, callback) => {
         if (!error && response.statusCode === 200) {
             console.log('processing : ' , keyword);            
             if (body.exactMatcheEntryUrl !== "false") {
-                return getNaverEntryDict(body.exactMatcheEntryUrl.replace("/#entry/", ""), callback); // 엔트리가 있으면 엔트리로 검색함
+                if (body.exactMatcheEntryUrl.includes('/#entry/')) {
+                    return getNaverEntryDict(body.exactMatcheEntryUrl.replace("/#entry/", ""), callback); // 엔트리가 있으면 엔트리로 검색함
+                }
+                if (body.exactMatcheEntryUrl.includes('/#userEntry/')) {
+                    return getUserEntryDict(body.exactMatcheEntryUrl.replace("/#userEntry/", ""), callback); // 엔트리가 있으면 엔트리로 검색함
+                }
+                return callback({error: true, errorMessage: 'Word Not Found'});        
             } else {
 
                 const isPlural = pluralCheck(body); // 복수형이나 여성형이면 원형 찾아서 검색함 (불완전)
@@ -62,6 +68,19 @@ const getNaverEntryDict = (entry, callback) => {
     });
 }
 
+const getUserEntryDict = (entry, callback) => {
+    const url = 'http://m.ptdic.naver.com/api/pt/userEntry.nhn?lh=true&hid=150300002723430560&entryId=' + encodeURIComponent(entry);
+    request({
+        url: url,
+        json: true
+    }, function (error, response, body) {
+    
+        if (!error && response.statusCode === 200) {
+            parseUserDict(body, callback);            
+        }
+    });
+}
+
 const parseNaverDict = (body, callback) => {
     const searchResult = body.searchResult;
     const searchEntryList = searchResult.searchEntryList;
@@ -89,7 +108,7 @@ const parseNaverDict = (body, callback) => {
     for (let i=0; i<meanList.length; i++) {
         const meaning = meanList[i];
         let partOfSpeech = meaning.partOfSpeech;
-        if (!(partOfSpeech !== '' && parts[partOfSpeech])) {
+        if (!partOfSpeech === '' && parts[partOfSpeech]) {
             partOfSpeech = '[' + parts[partOfSpeech] + ']';
         }
         dict.meanings.push({
@@ -100,6 +119,17 @@ const parseNaverDict = (body, callback) => {
 
     dict.error = false;
     callback(dict);
+}
+
+const parseUserDict = (body, callback) => {
+    callback({
+        entry: body.opendicData.entryName,
+        phoneticSigns: '',
+        meanList: [{
+            value: body.opendicData.means[0].mean.trim(),
+            partOfSpeech: ''
+        }]
+    })
 }
 
 
@@ -238,9 +268,11 @@ const getKoToPtEntryDict = (entry, callback) => {
         if (!error && response.statusCode === 200) {
             return parseKoToPt(body, callback);            
         }
+
+       return callback({error: true, errorMessage: 'Server Not Found'});            
+    
     });
 
-    callback({error: true, errorMessage: 'Server Not Found'});            
 }
 
 const parseKoToPt = (body, callback) => {
@@ -264,6 +296,7 @@ const parseKoToPt = (body, callback) => {
         return callback({error: true, errorMessage: 'Word Not found'});
     }
     dict.entry = searchEntryList.query;
+    dict.phoneticSigns = '';
     dict.meanings = []
     items.map(item => {
          dict.meanings.push({
@@ -273,7 +306,7 @@ const parseKoToPt = (body, callback) => {
     });
 
     dict.error = false;
-    return callback(dict);
+    callback(dict);
 }
 
 
@@ -298,4 +331,4 @@ module.exports = {getNaverDict};
 // test2.map(i => getNaverDict(i, j => console.log(j)));
 
 
-getNaverDict('fogo', i => console.log(i))
+// getNaverDict('mundialmente', i => console.log(i))
