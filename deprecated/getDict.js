@@ -108,7 +108,7 @@ const parseNaverDict = (body, callback) => {
     for (let i=0; i<meanList.length; i++) {
         const meaning = meanList[i];
         let partOfSpeech = meaning.partOfSpeech;
-        if (!partOfSpeech === '' && parts[partOfSpeech]) {
+        if (!(partOfSpeech === '') && parts[partOfSpeech]) {
             partOfSpeech = '[' + parts[partOfSpeech] + ']';
         }
         dict.meanings.push({
@@ -208,7 +208,7 @@ const reGetNaverDict = (keyword, callback) => {
         if (!error && response.statusCode === 200) {
             console.log('processing : ' , keyword);            
             if (body.exactMatcheEntryUrl !== "false") {
-                return etNaverEntryDict(body.exactMatcheEntryUrl.replace("/#entry/", ""), callback);
+                return getNaverEntryDict(body.exactMatcheEntryUrl.replace("/#entry/", ""), callback);
             } else {
                 const searchResult = body.searchResult;
                 const searchEntryList = searchResult.searchEntryList;
@@ -331,4 +331,4 @@ module.exports = {getNaverDict};
 // test2.map(i => getNaverDict(i, j => console.log(j)));
 
 
-// getNaverDict('mundialmente', i => console.log(i))
+getNaverDict('dia', i => console.log(i))
