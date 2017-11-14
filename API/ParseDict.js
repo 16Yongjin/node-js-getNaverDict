@@ -4,11 +4,11 @@ const parseNaverDict = (body) => {
     const searchResult = body.searchResult;
     const searchEntryList = searchResult.searchEntryList;
 
-    if (!searchResult || !searchResult.hasResult|| !searchEntryList.total || !searchEntryList.items) {
+    if (!searchResult || !searchResult.hasResult|| !searchEntryList.total || !searchEntryList.items.length) {
         return {error: true, errorMessage: 'Word Not found'};
     }
     const items = searchEntryList.items.find(item => item.dicType === 2);
-    if (!items) 
+    if (!items.length) 
         return {error: true, errorMessage: 'Word Not found'};
     
     const dict = {};    

@@ -1,13 +1,13 @@
 const request = require('request');
+const { parseUserDict } = require('./ParseDict');
 
 const isEntry = (body) => body.exactMatcheEntryUrl !== "false";
-const getEntry = (body) => body.exactMatcheEntryUrl.replace('/#entry/', '');
 
 const getKoToPtDict = (query) => 
     getKoToPT(query)
-        .then(dict => isEntry(dict) ? getKoToPtEntryDict(getEntry(dict)) : parseKoToPt(dict));
+        .then(dict => isEntry(dict) ?  getKoToPtEntryDict(dict.exactMatcheEntryUrl) : parseKoToPt(dict));
 
-const KoToPTURL = (query) => 'http://ptdic.naver.com/api/pt/search.nhn?dictName=alldict&query='+encodeURIComponent(query.toLowerCase());
+const KoToPTURL = (query) => `http://ptdic.naver.com/api/pt/search.nhn?dictName=alldict&query=${encodeURIComponent(query)}`;
 const getKoToPT = (query) => 
     new Promise((resolve, reject) => {
         const url = KoToPTURL(query)
@@ -18,9 +18,16 @@ const getKoToPT = (query) =>
                 )
     });
 
-const KoToPtEntryDictURL = (entry) => 'http://ptdic.naver.com/api/pt/entry.nhn?meanType=default&groupConjugation=false&entryId=' + entry;
-const getKoToPtEntryDict = (entry) => new Promise((resolve, reject) => {
-        const url = KoToPtEntryDictURL(entry)
+
+const getKoToPtEntryDict = (entryURl) => 
+    (entryURl.includes('/#entry/')) ?
+    getKoToPtNaverEntryDict(entryURl.replace('/#entry/', '')) :
+    getKoToPtUserEntryDict(entryURl.replace('/#userEntry/', ''))
+
+    
+const KoToPtNaverEntryDictURL = (entry) => `http://ptdic.naver.com/api/pt/entry.nhn?meanType=default&groupConjugation=false&entryId=${entry}`;
+const getKoToPtNaverEntryDict = (entry) => new Promise((resolve, reject) => {
+        const url = KoToPtNaverEntryDictURL(entry);
         request({ url, json: true }, (err, res, body) => 
             (!err && res.statusCode === 200) ?
                 resolve(parseKoToPt(body)) :
@@ -31,15 +38,28 @@ const getKoToPtEntryDict = (entry) => new Promise((resolve, reject) => {
         );
     });
 
+const KoToPtUserEntryDictURL = (userEntry) => `http://m.ptdic.naver.com/api/pt/userEntry.nhn?lh=true&hid=150300002723430560&entryId=${userEntry}`;
+const getKoToPtUserEntryDict = (userEntry) => new Promise((resolve, reject) => {
+        const url = KoToPtUserEntryDictURL(userEntry)
+        request({ url, json: true }, (err, res, body) => 
+            (!err && res.statusCode === 200) ?
+                resolve(parseUserDict(body)) :
+                reject({
+                    error: true,
+                    errorMessage: 'Server Not Found'
+                })
+        );
+    });
+
+
 const parseKoToPt = (body) => {
     const searchResult = body.searchResult;
-    const searchEntryList = searchResult.searchEntryList;
-
+    const searchEntryList = searchResult.searchEntryList;   
     if (
         !searchResult ||
         !searchResult.hasResult ||
         !searchEntryList.total ||
-        !searchEntryList.items
+        !searchEntryList.items.length
     ) {
         return { error: true, errorMessage: 'Word Not found' };
     }
@@ -47,7 +67,7 @@ const parseKoToPt = (body) => {
     let items = searchEntryList.items.filter(item => item.dicType === 1)
         .filter(item => item.entry.replace(/<\/?strong>/g, '') === body.query);
 
-    if (!items) {
+    if (!items.length) {
         return { error: true, errorMessage: 'Word Not found' };
     }
 
@@ -56,9 +76,9 @@ const parseKoToPt = (body) => {
         phoneticSigns: '',
 
     };
-    dict.meanings = items.map(item => item.meanList[0].value);
+    dict.meanings = items.map(item => { return { value: item.meanList[0].value }});
     dict.error = false;
     return dict;
 };
 
-module.exports = { getKoToPtDict };
+module.exports = { getKoToPT, getKoToPtDict, getKoToPtUserEntryDict, parseKoToPt };

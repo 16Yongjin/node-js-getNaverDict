@@ -3,19 +3,19 @@ const request = require('request');
 const VerbRootOptions = (query) => {
     const url = 'http://139.59.159.204:30000/api/';
     const headers = {
-        Host: '139.59.159.204:30000',
-        'User-Agent':
-            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.11; rv:54.0) Gecko/20100101 Firefox/54.0',
+        Pragma:'no-cache',
+        Origin:'http://cooljugator.com',
+        'Accept-Encoding':'gzip, deflate',
+        'Accept-Language':'en-US,en;q=0.8,ko;q=0.6,pt;q=0.4',
+        'User-Agent':'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36',
+        'Content-Type':'application/x-www-form-urlencoded; charset=UTF-8',
         Accept: '*/*',
-        'Accept-Language': 'ko-KR,ko;q=0.8,en-US;q=0.5,en;q=0.3',
-        'Accept-Encoding': 'gzip, deflate',
-        Referer: 'http://cooljugator.com/pt',
-        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
-        Origin: 'http://cooljugator.com',
-        Connection: 'keep-alive'
+        'Cache-Control':'no-cache',
+        Referer:'http://cooljugator.com/pt',
+        Connection:'keep-alive'
     };
     const body = 'language=pt&verb=' + query;
-    // Configure the request
+    
     return { url, headers, body };
 }
 
@@ -36,6 +36,7 @@ const validdateVerbRoot = (body, query) => {
  */
 
 const getVerbRoot = (query) => {
+    query = query.replace(/s$/, '');
     return new Promise((resolve, reject) => {
         request.post(VerbRootOptions(query), (error, response, body) => 
             (!error && response.statusCode == 200) ?
