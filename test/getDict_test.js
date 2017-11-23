@@ -11,14 +11,19 @@ describe('사전 가져오기 테스트', () => {
         getDict('dia')
             .then(dict => {
                 assert(dict.phoneticSigns === '[지아]');
+                console.log('dia', dict);
                 done();
-            });
+            })
+            .catch(err => {
+                console.log('dia', err);
+                done();
+            })
     });
 
     it('should get dictionary on 똑똑', (done) => {
         getDict('똑똑')
             .then(dict => {
-                console.log('똑똑', dict);
+                // console.log('똑똑', dict);
                 done();
             })
             .catch(err => {

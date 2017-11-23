@@ -5,10 +5,14 @@ module.exports = {
         const { query } = req.query
         if (query) {
             getNaverDict(query)
-                .then(dict => res.status(200).send(dict))
+                .then(dict => {
+                    console.log(dict);
+                    res.status(200).send(dict)
+                })
                 .catch(err => {
-                    res.status(500).send(err)
                     console.log(err);
+                    console.log('ㅅㅂ');
+                    res.status(500).send(err);
                 });
         } else {
             res.send({

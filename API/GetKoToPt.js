@@ -68,7 +68,7 @@ const parseKoToPt = (body) => {
         let items = searchEntryList.items.filter(item => item.dicType === 1)
             .filter(item => item.entry.replace(/<\/?strong>/g, '') === body.query);
 
-        if (!items || !items.length) {
+        if (!items || items.length === 0) {
             return reject({ error: true, errorMessage: 'Word Not found' });
         }
 
