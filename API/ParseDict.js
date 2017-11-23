@@ -32,7 +32,6 @@ const parseNaverDict = (body) => {
                 value: meaning.value
             }
         })
-        console.log('What the fuc');
         return resolve(dict);
     });
 
