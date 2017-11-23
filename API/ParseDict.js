@@ -1,40 +1,44 @@
 const { parts } = require('./partOfSpeech');
 
 const parseNaverDict = (body) => {
-    const searchResult = body.searchResult;
-    const searchEntryList = searchResult.searchEntryList;
+    return new Promise((resolve, reject) => {
+            
+        const searchResult = body.searchResult;
+        const searchEntryList = searchResult.searchEntryList;
 
-    if (!searchResult || !searchResult.hasResult|| !searchEntryList.total || !searchEntryList.items.length) {
-        return {error: true, errorMessage: 'Word Not found'};
-    }
-    const items = searchEntryList.items.find(item => item.dicType === 2);
-    if (!items.length) 
-        return {error: true, errorMessage: 'Word Not found'};
-    
-    const dict = {};    
-    dict.entry = items.entry.replace(/<\/?strong>/g, "");
-
-    if (items.phoneticSigns.length) {
-        dict.phoneticSigns = `[${items.phoneticSigns[0]}]`;
-    }
-
-    const meanList = items.meanList
-
-    dict.meanings = meanList.map((meaning) => {
-        let partOfSpeech = meaning.partOfSpeech;
-        if (partOfSpeech !== '' && parts[partOfSpeech]) {
-            partOfSpeech = `[${parts[partOfSpeech]}]`;
+        if (!searchResult || !searchResult.hasResult|| !searchEntryList.total || !searchEntryList.items.length) {
+            return reject({error: true, errorMessage: 'Word Not found'});
         }
-        return {
-            partOfSpeech,
-            value: meaning.value
+        const items = searchEntryList.items.find(item => item.dicType === 2);
+        if (!items || !items.length) 
+            return reject({error: true, errorMessage: 'Word Not found'});
+        
+        const dict = {};    
+        dict.entry = items.entry.replace(/<\/?strong>/g, "");
+
+        if (items.phoneticSigns.length) {
+            dict.phoneticSigns = `[${items.phoneticSigns[0]}]`;
         }
-    })
-    return dict;
+
+        const meanList = items.meanList
+
+        dict.meanings = meanList.map((meaning) => {
+            let partOfSpeech = meaning.partOfSpeech;
+            if (partOfSpeech !== '' && parts[partOfSpeech]) {
+                partOfSpeech = `[${parts[partOfSpeech]}]`;
+            }
+            return {
+                partOfSpeech,
+                value: meaning.value
+            }
+        })
+        return resolve(dict);
+    });
+
 }
 
 const parseUserDict = (body) => {
-    return ({
+    return Promise.resolve(({
         error: false,
         type: 'userDict',
         entry: body.opendicData.entryName,
@@ -43,7 +47,7 @@ const parseUserDict = (body) => {
             value: body.opendicData.means[0].mean.trim(),
             partOfSpeech: ''
         }]
-    })
+    }))
 }
 
 const pluralCheck = (body) => {

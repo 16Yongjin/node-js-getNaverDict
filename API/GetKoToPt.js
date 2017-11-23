@@ -53,32 +53,34 @@ const getKoToPtUserEntryDict = (userEntry) => new Promise((resolve, reject) => {
 
 
 const parseKoToPt = (body) => {
-    const searchResult = body.searchResult;
-    const searchEntryList = searchResult.searchEntryList;   
-    if (
-        !searchResult ||
-        !searchResult.hasResult ||
-        !searchEntryList.total ||
-        !searchEntryList.items.length
-    ) {
-        return { error: true, errorMessage: 'Word Not found' };
-    }
+    return new Promise((resolve, reject) => {
+        const searchResult = body.searchResult;
+        const searchEntryList = searchResult.searchEntryList;   
+        if (
+            !searchResult ||
+            !searchResult.hasResult ||
+            !searchEntryList.total ||
+            !searchEntryList.items.length
+        ) {
+            return reject({ error: true, errorMessage: 'Word Not found' });
+        }
 
-    let items = searchEntryList.items.filter(item => item.dicType === 1)
-        .filter(item => item.entry.replace(/<\/?strong>/g, '') === body.query);
+        let items = searchEntryList.items.filter(item => item.dicType === 1)
+            .filter(item => item.entry.replace(/<\/?strong>/g, '') === body.query);
 
-    if (!items.length) {
-        return { error: true, errorMessage: 'Word Not found' };
-    }
+        if (!items || !items.length) {
+            return reject({ error: true, errorMessage: 'Word Not found' });
+        }
 
-    let dict = {
-        entry: searchEntryList.query,
-        phoneticSigns: '',
+        let dict = {
+            entry: searchEntryList.query,
+            phoneticSigns: '',
 
-    };
-    dict.meanings = items.map(item => { return { value: item.meanList[0].value }});
-    dict.error = false;
-    return dict;
+        };
+        dict.meanings = items.map(item => { return { value: item.meanList[0].value }});
+        dict.error = false;
+        return resolve(dict);
+    });
 };
 
 module.exports = { getKoToPT, getKoToPtDict, getKoToPtUserEntryDict, parseKoToPt };

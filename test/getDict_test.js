@@ -20,7 +20,11 @@ describe('사전 가져오기 테스트', () => {
             .then(dict => {
                 console.log('똑똑', dict);
                 done();
-            });
+            })
+            .catch(err => {
+                console.log(err);
+                done();
+            })
     });
 
     xit('should get verb root', (done) => {
