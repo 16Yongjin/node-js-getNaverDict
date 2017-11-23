@@ -6,7 +6,10 @@ module.exports = {
         if (query) {
             getNaverDict(query)
                 .then(dict => res.status(200).send(dict))
-                .catch(err => res.status(500).send(err));
+                .catch(err => {
+                    res.status(500).send(err)
+                    console.log(err);
+                });
         } else {
             res.send({
                 errorMessage: '단어를 입력해주세요.',
