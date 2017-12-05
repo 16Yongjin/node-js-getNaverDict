@@ -2,16 +2,15 @@ const { parts } = require('./partOfSpeech');
 
 const parseNaverDict = (body) => {
     return new Promise((resolve, reject) => {
-            
         const searchResult = body.searchResult;
         const searchEntryList = searchResult.searchEntryList;
 
         if (!searchResult || !searchResult.hasResult|| !searchEntryList.total || !searchEntryList.items.length) {
-            return reject({error: true, errorMessage: 'Word Not found, Parsing Error1'});
+            return resolve({error: true, errorMessage: 'Word Not found, Parsing Error1'});
         }
         const items = searchEntryList.items.find(item => item.dicType === 2);
         if (!items || items.length === 0) 
-            return reject({error: true, errorMessage: 'Word Not found, Parsing Error2'});
+            return resolve({error: true, errorMessage: 'Word Not found, Parsing Error2'});
         
         const dict = {};    
         dict.entry = items.entry.replace(/<\/?strong>/g, "");

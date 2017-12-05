@@ -9,8 +9,8 @@ const getRoot = (query) => {
 
         return Promise.all(promises)
             .then(results => 
-                (results[0].hasVerbRoot) ?
-                    getDictAgain(results[0].root) :
+                (results[0]) ?
+                    getDictAgain(results[0]) :
                     results[1] ? results[1] : {error: true, errorMessage: 'Word Not found'});
 }
 

@@ -39,7 +39,7 @@ const getNaverEntryDict = (entry) => {
         request({ url , json: true}, (error, response, body) => 
             (!error && response.statusCode === 200) ?
                 resolve(parseNaverDict(body)) :
-                reject({ error: true, errorMessage: 'Word not found' })  
+                reject({ error: true, errorMessage: 'Word not found' })
         );
     });
 };
