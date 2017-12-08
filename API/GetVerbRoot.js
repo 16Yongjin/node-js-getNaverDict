@@ -9,7 +9,7 @@ const validdateVerbRoot = (body, query) => {
     const results = body.results;
     if (results.length > 0) {
         const root = results.find(item => item.title === query)
-        return root.price
+        return root ? root.price : false
     } else {
         return false
     }

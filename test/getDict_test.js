@@ -4,7 +4,8 @@ const { getDict } = require('../API/GetNaverDict');
 const { getVerbRoot } = require('../API/GetVerbRoot');
 const { parseNaverDict, parseUserDict  } = require('../API/ParseDict');
 const { getKoToPtDict, getKoToPtUserEntryDict } = require('../API/GetKoToPt');
-const { NaverPortugueseDictionary } = require('../API/GetDict');
+const  API = require('../API/GetDict');
+const { getRoot } = require('../API/GetRoot');
 
 describe('사전 가져오기 테스트', () => {
     xit('should get dictionary on valid input', (done) => {
@@ -73,9 +74,17 @@ describe('사전 가져오기 테스트', () => {
     })
 
     it('should get praticado\'s root praticar', (done) => {
-        getVerbRoot('praticado')
+        API('praticado')
             .then(dict => {
-                assert(dict.hasVerbRoot)
+                console.log(dict);
+                done()
+            }) 
+    })
+
+    it('should sorria', (done) => {
+        API('sorria')
+            .then(dict => {
+                console.log(dict);
                 done()
             }) 
     })
