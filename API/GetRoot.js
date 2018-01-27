@@ -12,8 +12,6 @@ const getRoot = (query) => {
         else if (getSigular(query) !== query)
             promises.push(getDictAgain(getSigular(query)))
 
-        console.log(getPPRoot(query));
-
         return Promise.all(promises)
             .then(results => 
                 (results[0]) ?
