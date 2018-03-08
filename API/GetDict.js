@@ -1,17 +1,24 @@
 const { getDict } = require('./GetNaverDict');
-const { getVerbRoot } = require('./GetVerbRoot');
 const { getKoToPtDict } = require('./GetKoToPt');
 const { getRoot } = require('./GetRoot');
-const { preprocessQuery } = require('./Preprocess');
+const { preprocess } = require('./Preprocess');
 
-const getPTDict = query => getDict(query)
-    .then(res => (res.error ? getRoot(query) : res))
-    .catch(err => err)
+const getPTDict = async query => {
+    const res = await getDict(query)
+    return res.error ? getRoot(query) : res
+}
 
-
+const isHangeul = query => /[가-힣]+/.test(query)
 const NaverPortugueseDictionary = (query) => 
-    (/[가-힣]+/.test(query)) ?
+    (isHangeul(query)) ?
         getKoToPtDict(query) :
-        getPTDict(preprocessQuery(query)) 
+        getPTDict(preprocess(query)) 
+
+// NaverPortugueseDictionary('praticado').then(d => {
+//     console.log(d)
+// })
+// .catch(e => {
+//     console.error(e)
+// })
 
 module.exports = NaverPortugueseDictionary;

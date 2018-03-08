@@ -1,77 +1,56 @@
 const { parts } = require('./partOfSpeech');
 
+const removeTag = entry => entry.replace(/<\/?strong>/g, '')
 const parseNaverDict = (body) => {
-    return new Promise((resolve, reject) => {
-        const searchResult = body.searchResult;
-        const searchEntryList = searchResult.searchEntryList;
-
-        if (!searchResult || !searchResult.hasResult|| !searchEntryList.total || !searchEntryList.items.length) {
-            return resolve({error: true, errorMessage: 'Word Not found, Parsing Error1'});
-        }
-        const items = searchEntryList.items.find(item => item.dicType === 2);
-        if (!items || items.length === 0) 
-            return resolve({error: true, errorMessage: 'Word Not found, Parsing Error2'});
+    try {
+        const { searchResult } = body
+        const { searchEntryList } = searchResult
+        const items = searchEntryList.items.find(({dicType}) => dicType === 2)
+        const entry = removeTag(items.entry)
         
-        const dict = {};    
-        dict.entry = items.entry.replace(/<\/?strong>/g, "");
-
-        if (items.phoneticSigns.length) {
-            dict.phoneticSigns = `[${items.phoneticSigns[0]}]`;
-        }
-
-        const meanList = items.meanList
-
-        dict.meanings = meanList.map((meaning) => {
-            let partOfSpeech = meaning.partOfSpeech;
-            if (partOfSpeech !== '' && parts[partOfSpeech]) {
-                partOfSpeech = `[${parts[partOfSpeech]}]`;
-            }
-            return {
-                partOfSpeech,
-                value: meaning.value
-            }
+        const phoneticSigns = items.phoneticSigns[0] && `[${items.phoneticSigns[0]}]` 
+        
+        const meanings = items.meanList.map(({ partOfSpeech, value }) => {
+            partOfSpeech = parts[partOfSpeech] && `[${parts[partOfSpeech]}]`;
+            return { value, partOfSpeech }
         })
-        return resolve(dict);
-    });
-
+        
+        return { entry, phoneticSigns, meanings }
+    } catch (e) {
+        const error = 'Word not found. Parsing Error'
+        console.log('parseNaverDict error', e)
+        return { error }
+    }
 }
 
-const parseUserDict = (body) => {
-    return Promise.resolve(({
-        error: false,
+const parseUserDict = ({ opendicData }) => {
+    return {
         type: 'userDict',
-        entry: body.opendicData.entryName,
+        entry: opendicData.entryName,
         phoneticSigns: '',
         meanings: [{
-            value: body.opendicData.means[0].mean.trim(),
+            value: opendicData.means[0].mean.trim(),
             partOfSpeech: ''
         }]
-    }))
+    }
 }
 
 const pluralCheck = (body) => {
-    const searchResult = body.searchResult;
-    const searchEntryList = searchResult.searchEntryList;
-    
-    if (!searchResult || !searchResult.hasResult|| !searchEntryList.total || !searchEntryList.items)
-        return false;
-    
-    const dictType3Items = searchEntryList.items.filter(item => item.dicType === 3);
-    let isPlural;
-    let designation = '';
-    if (dictType3Items.length) {
-        dictType3Items.forEach(item => {
-            item.meanList.forEach(mean => {
-                if (mean.value.includes('plural de') || mean.value.includes('feminino de')) {
-                    designation = mean.value;
-                    const res = mean.value.split(' ');
-                    isPlural = res[res.length-1];
-                } 
+    try {
+        const searchResult = body.searchResult
+        const searchEntryList = searchResult.searchEntryList
+        const items = searchEntryList.items.filter(({ dicType }) => dicType === 3);
+        items.forEach(({ meanList }) => {
+            meanList.forEach(({ value }) => {
+                if (value.includes('plural de') || value.includes('feminino de')) {
+                    return value.split(' ').slice(-1)
+                }
             })
-        });
-        return isPlural ? { type: designation, query: isPlural } : false
+        })
+    } catch (e) {
+        console.log('pluralCheck error', body.query, e)
+        return false
     }
-    return false;
 }
 
 module.exports = { parseNaverDict, parseUserDict, pluralCheck };
