@@ -6,7 +6,11 @@ module.exports = {
         if (query) {
             getNaverDict(query)
                 .then(dict => {
-                    res.status(200).send(dict);
+                    if (dict.error) {
+                        console.log(dict.error)
+                        res.status(200).send({ error: true })
+                    }
+
                 })
                 .catch(err => {
                     console.log(err);
