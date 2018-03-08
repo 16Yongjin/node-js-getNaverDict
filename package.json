@@ -4,7 +4,8 @@
   "description": "",
   "main": "getDict.js",
   "scripts": {
-    "test": "NODE_ENV=test nodemon --exec 'jest'"
+    "test": "NODE_ENV=test nodemon --exec 'jest'",
+    "start": "PORT=3333 node server.js"
   },
   "author": "",
   "license": "ISC",
