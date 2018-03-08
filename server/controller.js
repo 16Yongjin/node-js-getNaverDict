@@ -7,10 +7,10 @@ module.exports = {
             getNaverDict(query)
                 .then(dict => {
                     if (dict.error) {
-                        console.log(dict.error)
+                        console.log(query, dict.error)
                         res.status(200).send({ error: true })
                     }
-
+                    res.status(200).send(dict)
                 })
                 .catch(err => {
                     console.log(err);
