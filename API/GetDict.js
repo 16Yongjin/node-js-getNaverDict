@@ -5,7 +5,8 @@ const { preprocess } = require('./Preprocess');
 
 const getPTDict = async query => {
     const res = await getDict(query)
-    return res.error ? getRoot(query) : res
+    
+    return res.entry !== query || res.error ? getRoot(query) : res
 }
 
 const isHangeul = query => /[가-힣]+/.test(query)

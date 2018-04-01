@@ -1,3 +1,5 @@
+const mongoose = require('mongoose')
+const Dict = mongoose.model('Dict')
 const request = require('request-promise').defaults({ json: true })
 const { parseNaverDict, parseUserDict, pluralCheck  } = require('./ParseDict')
 
@@ -13,16 +15,17 @@ const getDict = async (query) => {
 }
 
 const getDictAgain = async (query) => {
-    const dict = await getNaverDict(query)
-    return isEntry(dict) ? getEntryDict(dict) : parseNaverDict(dict)
+    const hasCachedDict = Dict.findOne({ entry: query })
+    const [cachedDict, dict] = await Promise.all([hasCachedDict, getNaverDict(query)])
+    console.log('cachedDict', cachedDict)
+    return cachedDict ? cachedDict : isEntry(dict) ? getEntryDict(dict) : parseNaverDict(dict)
 }
 
 const getDictURL = (query) => `http://ptdic.naver.com/api/pt/search.nhn?dictName=alldict&query=${encodeURIComponent(query.trim().toLowerCase())}`
 const getNaverDict = async (query) => {
     const url = getDictURL(query)
-    return request(url, )
+    return request(url)
 }
-
 
 const getEntryDict = ({ exactMatcheEntryUrl }) => {
     if (!exactMatcheEntryUrl) return { error: 'No exactMatcheEntryUrl' }
