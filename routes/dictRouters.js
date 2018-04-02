@@ -12,7 +12,7 @@ module.exports = app => app.get('/api', async (req, res) => {
     return res.send({ errorMessage: '단어를 입력해주세요.', error: true })
 
   try {
-    const cachedDict = await Query.findOne({ query }).populate({ path: 'dict', model: 'Dict' })
+    const cachedDict = await Query.getCache(query)
 
     if (cachedDict) {
       return res.send(cachedDict.dict)
@@ -25,11 +25,7 @@ module.exports = app => app.get('/api', async (req, res) => {
     }
     
     res.send(dict)
-    const hasEntry = dict._id ? dict : await Dict.findOne({ entry: dict.entry })
-    const newDict = hasEntry || new Dict(dict)
-    const newQuery = new Query({ query, dict: newDict })
-    await Promise.all([newDict.save(), newQuery.save()])
-
+    await Query.setCache(query, dict)
   } catch (e) {
     res.status(500).send({ error: true, errorMessage: e })
   }
