@@ -13,6 +13,8 @@
     "body-parser": "^1.17.2",
     "express": "^4.15.4",
     "mongoose": "^5.0.12",
+    "mz": "^2.7.0",
+    "partial-js": "^1.1.5",
     "request": "^2.81.0",
     "request-promise": "^4.2.2"
   },

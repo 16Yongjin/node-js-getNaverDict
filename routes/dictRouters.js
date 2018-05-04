@@ -13,8 +13,8 @@ module.exports = app => app.get('/api', async (req, res) => {
 
   try {
     const cachedDict = await Query.getCache(query)
-
     if (cachedDict) {
+      console.log('from cache', cachedDict.dict)
       return res.send(cachedDict.dict)
     }
 
