@@ -3,10 +3,13 @@ const { getDictAgain } = require('./GetNaverDict')
 const { getRoots } = require('./GetRootJson')
 
 
-const hasDict = dict => dict && !dict.error
+const hasDict = (dict) => dict && !dict.error
 const getPPRoot = (query) => query.replace(/(a|i)(do$)|(a|i)(da$)|(a|i)(dos$)|(a|i)(das$)/, '$1r')
 const removeS = (query) => query.replace(/s$/, '')
 const getSigular = (query) => query.replace(/(a$)|(os$)|(as$)/, 'o')
+const nToM = (query) => query.replace(/([aeiou])ns$/, '$1m')
+const isTol = query => query.replace(/([aeou])is$/, '$1l')
+
 
 const getVerbRootAndDict = async (query) => {
     const verbRoot = await getVerbRoot(query)
