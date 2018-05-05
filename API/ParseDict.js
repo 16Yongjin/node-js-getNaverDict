@@ -38,16 +38,21 @@ const parseUserDict = ({ opendicData }) => {
 
 const pluralCheck = (body) => {
     try {
+        let hasPlural = false
         const searchResult = body.searchResult
         const searchEntryList = searchResult.searchEntryList
-        const items = searchEntryList.items.filter(({ dicType }) => dicType === 3);
+        const items = searchEntryList.items.filter(({ dicType }) => dicType === 3)
         items.forEach(({ meanList }) => {
+            if (hasPlural) return
             meanList.forEach(({ value }) => {
+                if (hasPlural) return
+
                 if (value.includes('plural de') || value.includes('feminino de')) {
-                    return value.split(' ').slice(-1)
+                    hasPlural = value.split(' ').slice(-1)[0]
                 }
             })
         })
+        return hasPlural
     } catch (e) {
         console.log('pluralCheck error', body.query, e)
         return false

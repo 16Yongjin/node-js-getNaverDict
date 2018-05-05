@@ -83,6 +83,12 @@ describe('사전 API 테스트', () => {
         expect(dict.entry).toEqual('sorrir')
     })
 
+    test('should get algumas', async () => {
+        const dict = await API('algumas')
+        expect(firstMean(dict)).toEqual('어떤. 어느 것인. 어떤 사람의. 약간의.')        
+    })
+
+
     test('should get Root of from json ', async () => {
         const root = getRoots('praticado')
         expect(root[0]).toEqual('praticar')

@@ -15,9 +15,12 @@ const getDict = async (query) => {
 }
 
 const getDictAgain = async (query) => {
-    const hasCachedDict = Dict.findOne({ entry: query })
-    const [cachedDict, dict] = await Promise.all([hasCachedDict, getNaverDict(query)])
-    return cachedDict ? cachedDict : isEntry(dict) ? getEntryDict(dict) : parseNaverDict(dict)
+    const cachedDict = await Dict.findOne({ entry: query })
+
+    if (cachedDict) return cachedDict
+
+    const dict = await getNaverDict(query)
+    return isEntry(dict) ? getEntryDict(dict) : parseNaverDict(dict)
 }
 
 const getDictURL = (query) => `http://ptdic.naver.com/api/ptko/search.nhn?dictName=alldict&query=${encodeURIComponent(query.trim().toLowerCase())}`
