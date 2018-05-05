@@ -1,5 +1,6 @@
 const { parts } = require('./partOfSpeech');
 
+const isHangeul = query => /[가-힣]+/.test(query)
 const removeTag = entry => entry.replace(/<\/?strong>/g, '')
 const parseNaverDict = (body) => {
     try {
@@ -11,7 +12,7 @@ const parseNaverDict = (body) => {
         const phoneticSigns = items.phoneticSigns[0] && `[${items.phoneticSigns[0]}]` 
         
         const meanings = items.meanList.map(({ partOfSpeech, value }) => {
-            partOfSpeech = parts[partOfSpeech] && `[${parts[partOfSpeech]}]`;
+            partOfSpeech = isHangeul(partOfSpeech) ? `[${partOfSpeech}]` : parts[partOfSpeech] && `[${parts[partOfSpeech]}]`;
             return { value, partOfSpeech }
         })
         

@@ -8,7 +8,7 @@ const getKoToPtDict = async (query) => {
     return isEntry(dict) ? getKoToPtEntryDict(dict) : parseKoToPt(dict)
 }
 
-const KoToPTURL = (query) => `http://ptdic.naver.com/api/pt/search.nhn?dictName=alldict&query=${encodeURIComponent(query)}`;
+const KoToPTURL = (query) => `http://ptdic.naver.com/api/ptko/search.nhn?dictName=alldict&query=${encodeURIComponent(query)}`;
 const getKoToPT = (query) => {
     const url = KoToPTURL(query)
     return request(url)
@@ -20,7 +20,7 @@ const getKoToPtEntryDict = ({ exactMatcheEntryUrl }) =>
         getKoToPtUserEntryDict(exactMatcheEntryUrl)
 
     
-const KoToPtNaverEntryDictURL = (entry) => `http://ptdic.naver.com/api/pt/entry.nhn?meanType=default&groupConjugation=false&entryId=${entry}`;
+const KoToPtNaverEntryDictURL = (entry) => `http://ptdic.naver.com/api/ptko/entry.nhn?meanType=default&groupConjugation=false&entryId=${entry}`;
 const getKoToPtNaverEntryDict = async (entry) => {
     entry = entry.replace('/#entry/', '')
     const url = KoToPtNaverEntryDictURL(entry)
@@ -34,7 +34,7 @@ const getKoToPtNaverEntryDict = async (entry) => {
     }
 }
 
-const userEntryURL = (userEntry) => `http://m.ptdic.naver.com/api/pt/userEntry.nhn?lh=true&hid=150300002723430560&entryId=${userEntry}`;
+const userEntryURL = (userEntry) => `http://m.ptdic.naver.com/api/ptko/userEntry.nhn?lh=true&hid=150300002723430560&entryId=${userEntry}`;
 const getKoToPtUserEntryDict = async (userEntry) => {
     userEntry = userEntry.replace('/#userEntry/', '')
     const url = userEntryURL(userEntry)

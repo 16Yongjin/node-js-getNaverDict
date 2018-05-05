@@ -27,38 +27,43 @@ beforeAll(async () => {
 const firstMean = dict => dict.meanings[0].value
 
 describe('사전 API 테스트', () => {
-    xtest('dia', async () => {
+    test('dia', async () => {
         const dict = await getDict('dia')
         expect(dict.phoneticSigns).toEqual('[지아]')
     })
-    xtest('verb root of passaria', async () => {
+    test('verb root of passaria', async () => {
         const root = await getVerbRoot('passaria')
         expect(root).toEqual('passar')
     })
 
-    xtest('should fail on 똑똑', async () => {
+    test('should fail on 똑똑', async () => {
         const dict = await getKoToPtDict('똑똑')
         expect(dict).toHaveProperty('error')
     })
 
-    xtest('고기', async () => {
+    test('고기', async () => {
         const dict = await getKoToPtDict('고기')
         expect(dict.meanings[0].value).toEqual('(동물의) carne')
     })
 
-    xtest('Entry word 치킨', async () => {
+    test('Entry word 치킨', async () => {
         const dict = await getKoToPtDict('치킨')
         expect(dict.meanings[0].value).toEqual('frango')
     })
 
-    xtest('User entry word 안녕하세요', async () => {
+    test('User entry word 안녕하세요', async () => {
         const dict = await getKoToPtDict('안녕하세요')
         expect(dict.meanings[0].value).toEqual('Bom dia.')
     })
 
-    xtest('User entry id', async () => {
+    test('User entry id', async () => {
         const dict = await getKoToPtUserEntryDict('0f05a1c34c4c48cfc0e41b1237d38d35')
         expect(firstMean(dict)).toEqual('Bom dia.')
+    })
+
+    test('should get ptko entry dict brincar', async () => {
+        const dict = await getDict('brincar')
+        expect(firstMean(dict)).toEqual('농담하다. 익살을 부리다. 놀리다. 희롱하다. 번롱(翻弄)하다. 장난하다.')
     })
 
     test('should get root of praticado - praticar', async () => {
@@ -78,7 +83,7 @@ describe('사전 API 테스트', () => {
         expect(dict.entry).toEqual('sorrir')
     })
 
-    xtest('should get Root of from json ', async () => {
+    test('should get Root of from json ', async () => {
         const root = getRoots('praticado')
         expect(root[0]).toEqual('praticar')
     })
