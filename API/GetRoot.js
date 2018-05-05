@@ -4,7 +4,7 @@ const { getRoots } = require('./GetRootJson')
 
 
 const hasDict = dict => dict && !dict.error
-const getPPRoot = (query) => query.replace(/(a|i)(do$)|(da$)|(dos$)|(das$)/, '$1r')
+const getPPRoot = (query) => query.replace(/(a|i)(do$)|(a|i)(da$)|(a|i)(dos$)|(a|i)(das$)/, '$1r')
 const removeS = (query) => query.replace(/s$/, '')
 const getSigular = (query) => query.replace(/(a$)|(os$)|(as$)/, 'o')
 
