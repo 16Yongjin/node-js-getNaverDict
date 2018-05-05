@@ -11,7 +11,12 @@ const getDict = async (query) => {
         return getEntryDict(dict)
 
     const plural = pluralCheck(dict)
-    return plural ? getDictAgain(plural) : parseNaverDict(dict)
+    if (plural) {
+        const pluralDict = await getDictAgain(plural)
+        return { ...pluralDict, stemmed: true }
+    } else {
+        return parseNaverDict(dict)
+    }
 }
 
 const getDictAgain = async (query) => {

@@ -83,9 +83,14 @@ describe('사전 API 테스트', () => {
         expect(dict.entry).toEqual('sorrir')
     })
 
-    test('should get algumas', async () => {
+    test.only('should get algumas - algum', async () => {
         const dict = await API('algumas')
         expect(firstMean(dict)).toEqual('어떤. 어느 것인. 어떤 사람의. 약간의.')        
+    })
+
+    test.only('should get problemas - problema', async () => {
+        const dict = await API('problemas')
+        expect(firstMean(dict)).toEqual('문제. 의문. 난문(難問).')        
     })
 
 
