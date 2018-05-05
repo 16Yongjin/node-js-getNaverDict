@@ -2,9 +2,16 @@ const { getVerbRoot } = require('./GetVerbRoot')
 const { getDictAgain } = require('./GetNaverDict')
 const { getRoots } = require('./GetRootJson')
 
+
+const hasDict = dict => dict && !dict.error
 const getPPRoot = (query) => query.replace(/(a|i)(do$)|(da$)|(dos$)|(das$)/, '$1r')
 const removeS = (query) => query.replace(/s$/, '')
 const getSigular = (query) => query.replace(/(a$)|(os$)|(as$)/, 'o')
+
+const getVerbRootAndDict = async (query) => {
+    const verbRoot = await getVerbRoot(query)
+    return verbRoot ? getDictAgain(verbRoot) : { error: 'Word Not found' }
+}
 
 const getRoot = async (query) => {
     if (getRoots(query)) {
@@ -12,7 +19,7 @@ const getRoot = async (query) => {
         return getDictAgain(getRoots(query)[0])
     }
 
-    const promises = [getVerbRoot(query)]
+    const promises = []
     if (getPPRoot(query) !== query)
         promises.push(getDictAgain(getPPRoot(query)))
     else {
@@ -22,12 +29,10 @@ const getRoot = async (query) => {
             promises.push(getDictAgain(getSigular(query)))
     }
 
-    const [verbRoot, otherRoot, anotherRoot] = await Promise.all(promises)
-    return (verbRoot) ? getDictAgain(verbRoot) : 
-        otherRoot && !otherRoot.error ? otherRoot :
-        anotherRoot && !anotherRoot.error ? anotherRoot :
-        { error: 'Word Not found' }
-    
+    const [otherRoot, anotherRoot] = await Promise.all(promises)
+    return hasDict(otherRoot) ? otherRoot :
+           hasDict(anotherRoot) ? anotherRoot :
+           getVerbRootAndDict(query)
 }
 
 module.exports = { getRoot }
