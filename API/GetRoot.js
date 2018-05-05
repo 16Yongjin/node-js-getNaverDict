@@ -6,6 +6,7 @@ const { getRoots } = require('./GetRootJson')
 const hasDict = (dict) => dict && !dict.error
 const getPPRoot = (query) => query.replace(/(a|i)(do$)|(a|i)(da$)|(a|i)(dos$)|(a|i)(das$)/, '$1r')
 const removeS = (query) => query.replace(/s$/, '')
+const removeES = (query) => query.replace(/([rsz])es$/, '$1')
 const getSigular = (query) => query.replace(/(a$)|(os$)|(as$)/, 'o')
 const nToM = (query) => query.replace(/([aeiou])ns$/, '$1m')
 const isTol = query => query.replace(/([aeou])is$/, '$1l')
@@ -28,6 +29,8 @@ const getRoot = async (query) => {
     else {
         if (removeS(query) !== query)
             promises.push(getDictAgain(removeS(query)))
+        if (removeES(query) !== query)
+            promises.push(getDictAgain(removeES(query)))
         if (getSigular(query) !== query)
             promises.push(getDictAgain(getSigular(query)))
     }
