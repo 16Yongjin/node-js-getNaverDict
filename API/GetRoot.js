@@ -18,10 +18,15 @@ const getVerbRootAndDict = async (query) => {
 }
 
 const getRoot = async (query) => {
+    // console.log('getRoot', query)
+    
     if (getRoots(query)) {
         // console.log('get root from json', query, getRoots(query)[0])
-        return getDictAgain(getRoots(query)[0])
+        const getRootsDict = await getDictAgain(getRoots(query)[0])
+        if (!getRootsDict.error)
+            return getRootsDict
     }
+
 
     const promises = []
     if (getPPRoot(query) !== query)
