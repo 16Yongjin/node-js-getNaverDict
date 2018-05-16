@@ -15,14 +15,14 @@ const getKoToPT = (query) => {
 }
 
 const getKoToPtEntryDict = ({ exactMatcheEntryUrl }) => 
-    exactMatcheEntryUrl.includes('/#entry/') ?
+    exactMatcheEntryUrl.includes('/entry/') ?
         getKoToPtNaverEntryDict(exactMatcheEntryUrl) :
         getKoToPtUserEntryDict(exactMatcheEntryUrl)
 
     
 const KoToPtNaverEntryDictURL = (entry) => `http://ptdic.naver.com/api/ptko/entry.nhn?meanType=default&groupConjugation=false&entryId=${entry}`;
 const getKoToPtNaverEntryDict = async (entry) => {
-    entry = entry.replace('/#entry/', '')
+    entry = entry.replace('/ptkodict/ko/entry/kopt/', '')
     const url = KoToPtNaverEntryDictURL(entry)
     try {
         const body = await request(url)
@@ -36,7 +36,8 @@ const getKoToPtNaverEntryDict = async (entry) => {
 
 const userEntryURL = (userEntry) => `http://m.ptdic.naver.com/api/ptko/userEntry.nhn?lh=true&hid=150300002723430560&entryId=${userEntry}`;
 const getKoToPtUserEntryDict = async (userEntry) => {
-    userEntry = userEntry.replace('/#userEntry/', '')
+    console.log(userEntry)
+    userEntry = userEntry.replace('/ptkodict/ko/userEntry/kopt/', '')
     const url = userEntryURL(userEntry)
     try {
         const body = await request(url)

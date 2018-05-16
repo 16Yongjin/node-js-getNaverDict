@@ -93,11 +93,15 @@ describe('사전 API 테스트', () => {
         expect(firstMean(dict)).toEqual('문제. 의문. 난문(難問).')        
     })
 
-    test.only('should get secretarias - secretaria', async () => {
+    test('should get secretarias - secretaria', async () => {
         const dict = await API('secretarias')
         expect(firstMean(dict)).toEqual('서기관 사무소. 비서실장(秘書長室).')
     })
 
+    test('should get entry simpático', async () => {
+        const dict = await API('simpático')
+        expect(firstMean(dict)).toEqual('동정하는. 인정 깊은.')
+    })
 
     test('should get Root of from json ', async () => {
         const root = getRoots('praticado')

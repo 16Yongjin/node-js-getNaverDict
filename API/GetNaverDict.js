@@ -9,7 +9,6 @@ const getDict = async (query) => {
     const dict = await getNaverDict(query)
     if (isEntry(dict))
         return getEntryDict(dict)
-
     const plural = pluralCheck(dict)
     if (plural) {
         const pluralDict = await getDictAgain(plural)
@@ -36,23 +35,22 @@ const getNaverDict = async (query) => {
 
 const getEntryDict = ({ exactMatcheEntryUrl }) => {
     if (!exactMatcheEntryUrl) return { error: 'No exactMatcheEntryUrl' }
-
-    return (exactMatcheEntryUrl.includes('/#entry/')) ?
+    return (exactMatcheEntryUrl.includes('/entry/')) ?
         getNaverEntryDict(exactMatcheEntryUrl) :
         getUserEntryDict(exactMatcheEntryUrl)
 }
 
 const EntryDictURL = (entry) => `http://ptdic.naver.com/api/ptko/entry.nhn?meanType=default&groupConjugation=false&entryId=${entry}`
 const getNaverEntryDict = async (entry) => {
-    entry = entry.replace('/#entry/', '')
+    entry = entry.replace('/ptkodict/ko/entry/ptko/', '')
     const url = EntryDictURL(entry)
     const body = await request(url)
     return parseNaverDict(body)
 }
 
 const UserEntryURL = (entry) => 'http://m.ptdic.naver.com/api/ptko/userEntry.nhn?lh=true&hid=150300002723430560&entryId=' + encodeURIComponent(entry);
-const getUserEntryDict = async (entry) => {
-    entry = entry.replace('/#userEntry/', '')
+const getUserEntryDict = async (entry) => {  
+    entry = entry.replace('/ptkodict/ko/userEntry/ptko/', '')
     const url = UserEntryURL(entry);
     const body = await request(url)
     parseUserDict(body)

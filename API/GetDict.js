@@ -7,7 +7,6 @@ const getPTDict = async query => {
     const res = await getDict(query)
 
     if (res.stemmed && !res.error) return res
-    console.log('getPTDict', res)
     return res.entry !== query || res.error ? getRoot(query) : res
 }
 
