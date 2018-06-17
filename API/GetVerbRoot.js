@@ -1,3 +1,4 @@
+const _ = require('partial-js')
 const request = require('request-promise').defaults({ json: true })
 
 const url = (query) => `https://cooljugator.org/search/pt/${encodeURIComponent(query)}`
@@ -11,20 +12,10 @@ const validdate = ({ results }, query) => {
     }
 }
 
-/**
- * Get Verb root from cooljugator.com
- * @param {String} query
- */
-const getVerbRoot = async (query) => {
-    query = query.replace(/s$/, '');
-    try {
-        const body = await request(url(query))
-        return validdate(body, query)
-    } catch (e) {
-        const error = 'Verb Server Not Found'
-        console.log(error)
-        return { error }
-    }
-};
+const trimS = query => query.replace(/s$/, '')
+
+const getVerbRoot = async (query) => _.go(query, trimS, url, request, _(validdate, _, query))
+
+// getVerbRoot('fala').then(console.log)
 
 module.exports = { getVerbRoot }

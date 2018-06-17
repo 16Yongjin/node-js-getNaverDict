@@ -1,59 +1,43 @@
+const _ = require('partial-js')
 const mongoose = require('mongoose')
 const Dict = mongoose.model('Dict')
 const request = require('request-promise').defaults({ json: true })
 const { parseNaverDict, parseUserDict, pluralCheck  } = require('./ParseDict')
-
+const dictUrl = 'http://ptdic.naver.com/api/ptko'
 const isEntry = ({ exactMatcheEntryUrl }) => exactMatcheEntryUrl && exactMatcheEntryUrl !== "false"
-
 const getDict = async (query) => {
-    const dict = await getNaverDict(query)
-    if (isEntry(dict))
-        return getEntryDict(dict)
-    const plural = pluralCheck(dict)
-    if (plural) {
-        const pluralDict = await getDictAgain(plural)
-        return { ...pluralDict, stemmed: true }
-    } else {
-        return parseNaverDict(dict)
-    }
+  const dict = await getNaverDict(query)
+  if (isEntry(dict))
+    return entryDict(dict)
+  const plural = pluralCheck(dict)
+  if (plural) {
+    const pluralDict = await getDictAgain(plural)
+    return { ...pluralDict, stemmed: true }
+  } else {
+    return parseNaverDict(dict)
+  }
 }
 
 const getDictAgain = async (query) => {
-    const cachedDict = await Dict.findOne({ entry: query })
+  const cachedDict = await Dict.findOne({ entry: query })
+  if (cachedDict) return cachedDict
 
-    if (cachedDict) return cachedDict
-
-    const dict = await getNaverDict(query)
-    return isEntry(dict) ? getEntryDict(dict) : parseNaverDict(dict)
+  const dict = await getNaverDict(query)
+  return isEntry(dict) ? entryDict(dict) : parseNaverDict(dict)
 }
 
-const getDictURL = (query) => `http://ptdic.naver.com/api/ptko/search.nhn?dictName=alldict&query=${encodeURIComponent(query.trim().toLowerCase())}`
-const getNaverDict = async (query) => {
-    const url = getDictURL(query)
-    return request(url)
-}
+const getDictURL = (query) => `${dictUrl}/search.nhn?dictName=alldict&query=${encodeURIComponent(query)}`
+const getNaverDict = _.pipe(getDictURL, request)
 
-const getEntryDict = ({ exactMatcheEntryUrl }) => {
-    if (!exactMatcheEntryUrl) return { error: 'No exactMatcheEntryUrl' }
-    return (exactMatcheEntryUrl.includes('/entry/')) ?
-        getNaverEntryDict(exactMatcheEntryUrl) :
-        getUserEntryDict(exactMatcheEntryUrl)
-}
+const entryDict = ({ exactMatcheEntryUrl }) => 
+    exactMatcheEntryUrl.includes('/entry/') ? naverEntryDict(exactMatcheEntryUrl) : userEntryDict(exactMatcheEntryUrl)
 
-const EntryDictURL = (entry) => `http://ptdic.naver.com/api/ptko/entry.nhn?meanType=default&groupConjugation=false&entryId=${entry}`
-const getNaverEntryDict = async (entry) => {
-    entry = entry.replace('/ptkodict/ko/entry/ptko/', '')
-    const url = EntryDictURL(entry)
-    const body = await request(url)
-    return parseNaverDict(body)
-}
+const entryDictURL = (entry) => `${dictUrl}/entry.nhn?meanType=default&entryId=${encodeURIComponent(entry)}`
+const naverEntryId = entry => entry.replace('/ptkodict/ko/entry/ptko/', '')
+const naverEntryDict = _.pipe(naverEntryId, entryDictURL, request, parseNaverDict)
 
-const UserEntryURL = (entry) => 'http://m.ptdic.naver.com/api/ptko/userEntry.nhn?lh=true&hid=150300002723430560&entryId=' + encodeURIComponent(entry);
-const getUserEntryDict = async (entry) => {  
-    entry = entry.replace('/ptkodict/ko/userEntry/ptko/', '')
-    const url = UserEntryURL(entry);
-    const body = await request(url)
-    parseUserDict(body)
-}
+const userEntryURL = (entry) => `${dictUrl}/userEntry.nhn?lh=true&entryId=${encodeURIComponent(entry)}`
+const userEntryId = entry => entry.replace('/ptkodict/ko/userEntry/ptko/', '')
+const userEntryDict = _.pipe(userEntryId, userEntryURL, request, parseUserDict)
 
 module.exports = { getDict, getDictAgain }

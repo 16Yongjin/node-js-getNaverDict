@@ -1,13 +1,9 @@
 require('../model/dict')
 require('../model/query')
 const mongoose = require('mongoose')
-
-const assert = require('assert')
-const request = require('supertest')
 const { getDict } = require('../API/GetNaverDict')
 const { getVerbRoot } = require('../API/GetVerbRoot')
 const { getRoots } = require('../API/GetRootJson')
-const { parseNaverDict, parseUserDict  } = require('../API/ParseDict')
 const { getKoToPtDict, getKoToPtUserEntryDict } = require('../API/GetKoToPt')
 const  API = require('../API/GetDict')
 const { getRoot } = require('../API/GetRoot')
@@ -106,6 +102,11 @@ describe('사전 API 테스트', () => {
     test('should get Root of from json ', async () => {
         const root = getRoots('praticado')
         expect(root[0]).toEqual('praticar')
+    })
+
+    test('simpática to simpático' , async () => {
+        const dict = await API('simpática')
+        expect(dict.entry).toEqual('simpático')
     })
 
 })
